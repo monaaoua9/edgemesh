@@ -1,0 +1,30 @@
+name: soak
+on:
+  workflow_dispatch:
+    inputs:
+      minutes: { description: "run length", default: "60" }
+      devices: { description: "simulated devices", default: "5000" }
+jobs:
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with: { go-version: "1.26", check-latest: true }
+      - run: make build
+      - name: soak
+        env:
+          DURATION: ${{ fromJSON(inputs.minutes) * 60 }}
+          DEVICES: ${{ inputs.devices }}
+        run: |
+          ulimit -n 65536
+          set -o pipefail
+          scripts/soak.sh 2>&1 | tee soak.txt
+      - name: summary
+        if: always()
+        run: |
+          { echo '```'; cat soak.txt; echo '```'; echo; echo '```'; awk -F, 'NR==1||NR%30==0' soak.csv; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: soak, path: "soak.csv\nsoak.txt" }

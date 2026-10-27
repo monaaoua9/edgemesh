@@ -1,6 +1,6 @@
 VERSION ?= dev
 
-.PHONY: smoke build test race bench fuzz vet fmt-check proto certs docker compose-up loadtest clean
+.PHONY: soak-local smoke build test race bench fuzz vet fmt-check proto certs docker compose-up loadtest clean
 
 build:
 	go build -trimpath -ldflags="-X main.version=$(VERSION)" -o bin/ ./cmd/...
@@ -39,6 +39,9 @@ compose-up:
 	docker compose -f deploy/docker-compose.yml up --build
 
 # 10k plaintext devices against a local gateway (start cloudmock + gateway first)
+soak-local: build
+	DURATION=300 scripts/soak.sh
+
 smoke: build
 	scripts/smoke.sh
 
