@@ -6,8 +6,10 @@ Wants=network-online.target
 [Service]
 User=edgemesh
 Group=edgemesh
+# gateway.env (chmod 600, owner root) holds:
+#   EDGE_AUTH_TOKEN=...  EDGE_CLOUD_TOKEN=...  EDGE_CLOUD_URL=https://<your-ingest-host>/v1/ingest
 EnvironmentFile=/etc/edgemesh/gateway.env
-ExecStart=/usr/local/bin/gateway -data /var/lib/edgemesh -cloud https://ingest.example.com/v1/ingest -tls-cert /etc/edgemesh/tls/server.pem -tls-key /etc/edgemesh/tls/server-key.pem -log-json
+ExecStart=/usr/local/bin/gateway -data /var/lib/edgemesh -cloud ${EDGE_CLOUD_URL} -tls-cert /etc/edgemesh/tls/server.pem -tls-key /etc/edgemesh/tls/server-key.pem -log-json
 Restart=always
 RestartSec=2
 TimeoutStopSec=30
