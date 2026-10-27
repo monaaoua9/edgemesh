@@ -1,0 +1,5 @@
+{
+  "engine_temp": { "min": -40, "max": 130, "max_rate_per_sec": 12, "z": 4, "min_std": 0.5 },
+  "vibration":   { "max": 15, "z": 4.5, "min_std": 0.1 },
+  "battery_v":   { "min": 3.0, "z": 5 }
+}

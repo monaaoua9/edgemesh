@@ -1,0 +1,33 @@
+[Unit]
+Description=Edge IoT ingestion gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=edgemesh
+Group=edgemesh
+EnvironmentFile=/etc/edgemesh/gateway.env
+ExecStart=/usr/local/bin/gateway -data /var/lib/edgemesh -cloud https://ingest.example.com/v1/ingest -tls-cert /etc/edgemesh/tls/server.pem -tls-key /etc/edgemesh/tls/server-key.pem -log-json
+Restart=always
+RestartSec=2
+TimeoutStopSec=30
+LimitNOFILE=200000
+StateDirectory=edgemesh
+
+# sandbox
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+ReadWritePaths=/var/lib/edgemesh
+
+[Install]
+WantedBy=multi-user.target
