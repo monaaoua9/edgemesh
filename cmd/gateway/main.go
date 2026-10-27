@@ -230,14 +230,14 @@ func run(cfg config.Config) error {
 	// order matters: stop intake, flush what is queued, then stop the uploader
 	sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	srv.Shutdown(sctx)
+	_ = srv.Shutdown(sctx)
 	if gsrv != nil {
 		gsrv.Shutdown(sctx)
 	}
 	pipe.Close()
 	cancelBG()
 	wg.Wait()
-	admin.Shutdown(adm, 2*time.Second)
+	_ = admin.Shutdown(adm, 2*time.Second)
 	lg.Info("bye", "lag_records", fwd.Lag())
 	return err
 }

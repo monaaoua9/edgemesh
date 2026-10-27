@@ -2,6 +2,7 @@ package ingest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -216,7 +217,7 @@ func TestQoS0ShedsUnderPressure(t *testing.T) {
 	// don't start draining fast: hammer far more than the queue holds
 	shed := 0
 	for i := range 50000 {
-		if err := p.Submit(context.Background(), telemetry.Reading{DeviceID: "d", Metric: "m", Value: float64(i)}, false); err == ErrOverloaded {
+		if err := p.Submit(context.Background(), telemetry.Reading{DeviceID: "d", Metric: "m", Value: float64(i)}, false); errors.Is(err, ErrOverloaded) {
 			shed++
 		}
 	}
@@ -224,7 +225,7 @@ func TestQoS0ShedsUnderPressure(t *testing.T) {
 	if shed == 0 || m.Dropped.Value() != uint64(shed) {
 		t.Fatalf("shed=%d counter=%d", shed, m.Dropped.Value())
 	}
-	if err := p.Submit(context.Background(), telemetry.Reading{DeviceID: "d"}, true); err != ErrClosed {
+	if err := p.Submit(context.Background(), telemetry.Reading{DeviceID: "d"}, true); !errors.Is(err, ErrClosed) {
 		t.Fatalf("got %v", err)
 	}
 }

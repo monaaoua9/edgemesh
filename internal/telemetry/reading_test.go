@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"errors"
 	"math"
 	"strings"
 	"testing"
@@ -34,7 +35,7 @@ func TestUnmarshalTruncated(t *testing.T) {
 
 func TestTooLongName(t *testing.T) {
 	r := Reading{DeviceID: strings.Repeat("x", 256)}
-	if _, err := r.AppendBinary(nil); err != ErrTooLong {
+	if _, err := r.AppendBinary(nil); !errors.Is(err, ErrTooLong) {
 		t.Fatalf("got %v", err)
 	}
 }
