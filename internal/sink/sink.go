@@ -58,7 +58,7 @@ func (h *HTTP) Send(ctx context.Context, b Batch) error {
 	var body bytes.Buffer
 	zw := gzip.NewWriter(&body)
 	if err := json.NewEncoder(zw).Encode(b); err != nil {
-		return fmt.Errorf("%w: encode: %v", ErrPermanent, err)
+		return fmt.Errorf("%w: encode: %w", ErrPermanent, err)
 	}
 	if err := zw.Close(); err != nil {
 		return err
@@ -66,7 +66,7 @@ func (h *HTTP) Send(ctx context.Context, b Batch) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, h.url, &body)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrPermanent, err)
+		return fmt.Errorf("%w: %w", ErrPermanent, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Encoding", "gzip")
@@ -82,7 +82,7 @@ func (h *HTTP) Send(ctx context.Context, b Batch) error {
 		return err
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10)) // let the conn get reused
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10)) // let the conn get reused
 
 	switch {
 	case resp.StatusCode/100 == 2:

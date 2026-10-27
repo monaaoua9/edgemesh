@@ -162,7 +162,7 @@ func device(ctx context.Context, o opts, n int, st *stats) {
 		}
 		first = false
 		st.connected.Add(1)
-		c.Subscribe("devices/" + id + "/tasks")
+		_ = c.Subscribe("devices/" + id + "/tasks")
 
 		// stagger so 5k devices don't all fire on the same tick
 		sleep(ctx, time.Duration(rng.Int64N(int64(o.interval))))
@@ -193,7 +193,7 @@ func loop(ctx context.Context, c *mqtt.Client, id string, o opts, st *stats, rng
 			if err := c.Publish("devices/"+id+"/heartbeat", nil, 0); err != nil {
 				return err
 			}
-			c.Poll(time.Millisecond) // pick up downlink tasks
+			_ = c.Poll(time.Millisecond) // pick up downlink tasks
 		case now := <-tick.C:
 			if dark(darkFrom, darkTo) {
 				continue

@@ -2,6 +2,7 @@ package wal
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,7 +26,7 @@ func drain(t *testing.T, r *Reader) []string {
 	var out []string
 	for {
 		_, p, err := r.Next()
-		if err == ErrNoData {
+		if errors.Is(err, ErrNoData) {
 			return out
 		}
 		if err != nil {
@@ -192,7 +193,7 @@ func TestBatchAndTooLarge(t *testing.T) {
 	if err != nil || first != 0 {
 		t.Fatal(first, err)
 	}
-	if _, err := l.Append(make([]byte, MaxRecordSize+1)); err != ErrTooLarge {
+	if _, err := l.Append(make([]byte, MaxRecordSize+1)); !errors.Is(err, ErrTooLarge) {
 		t.Fatalf("got %v", err)
 	}
 	if l.Stats().NextIndex != 3 {
@@ -218,7 +219,7 @@ func TestTailingReaderSeesLiveWrites(t *testing.T) {
 	deadline := time.After(10 * time.Second)
 	for want := 0; want < n; {
 		idx, p, err := r.Next()
-		if err == ErrNoData {
+		if errors.Is(err, ErrNoData) {
 			select {
 			case <-l.Notify():
 			case <-time.After(5 * time.Millisecond):
