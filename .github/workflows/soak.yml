@@ -15,10 +15,11 @@ jobs:
       - run: make build
       - name: soak
         env:
-          DURATION: ${{ fromJSON(inputs.minutes) * 60 }}
+          MINUTES: ${{ inputs.minutes }}
           DEVICES: ${{ inputs.devices }}
         run: |
           ulimit -n 65536
+          export DURATION=$((MINUTES * 60))
           set -o pipefail
           scripts/soak.sh 2>&1 | tee soak.txt
       - name: summary
