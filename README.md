@@ -72,7 +72,7 @@ Full stack with dashboards: `make compose-up` (Grafana on :3000).
 Kubernetes: `deploy/k8s/gateway.yaml` (StatefulSet + PVC, PDB, NetworkPolicy).
 `./bin/gateway -h` lists every flag; `EDGE_AUTH_TOKEN` / `EDGE_CLOUD_TOKEN` set tokens without leaking them in `ps`.
 
-## Measured (laptop, loopback, Windows 11, generator and gateway on the same CPU)
+## Measured (loopback, generator and gateway on the same machine; first four rows on a Windows 11 laptop, last two on GitHub Actions Linux runners)
 
 | Scenario | Result |
 |---|---|
@@ -80,11 +80,12 @@ Kubernetes: `deploy/k8s/gateway.yaml` (StatefulSet + PVC, PDB, NetworkPolicy).
 | 8,000 MQTT + 5,000 gRPC streams (TLS), cloud down for 8 s mid-run | 928,752 accepted = 928,752 delivered, 0 duplicates, 0 lost |
 | WAL | ~1 Âµs/record in 64-record group commits, ~4.9 Âµs single append |
 | Anomaly detector | ~400 ns / reading; histogram `Observe` ~90 ns |
-| Linux CI runner (`make smoke`): 2,000 MQTT devices, 4 s cloud outage | 42,241 accepted = 42,241 delivered, 0 dup / lost; ack-to-durable latency p50 12 µs, p99 80 µs, p99.9 160 µs |
+| Linux CI runner (`make smoke`): 2,000 MQTT devices, 4 s cloud outage | 42,241 accepted = 42,241 delivered, 0 dup / lost; ack-to-durable latency p50 12 Âµs, p99 80 Âµs, p99.9 160 Âµs |
+| Linux CI runner, 1 h soak (`scripts/soak.sh`): 5,000 MQTT devices (~5k msg/s), 14 `kill -9` gateway restarts, a 5 s cloud outage every 90 s | 17.86 M readings acked to devices, 21.43 M delivered upstream, 0 lost, 0 evicted; heap max 38 MB, goroutines flat at 5,018, p99 ack-to-durable max 0.13 ms |
 
 Windows has a coarse monotonic clock in Go, so sub-millisecond percentiles read
-low there; the Linux row comes from the CI smoke job on a shared runner at light
-load, so it says nothing about 10k+ devices.
+low there. The Linux rows come from shared GitHub runners: the soak shows no leak or
+loss over an hour of abuse at ~5k msg/s, but it is not a 10k+ device test.
 
 ## Quality gates
 
