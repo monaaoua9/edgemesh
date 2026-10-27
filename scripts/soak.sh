@@ -19,7 +19,7 @@ trap cleanup EXIT
 start_gw() {
   "$bin/gateway" -data "$work/data" -cloud http://127.0.0.1:9090/v1/ingest \
     -mqtt 127.0.0.1:1883 -grpc 127.0.0.1:9000 -admin 127.0.0.1:8080 >>"$work/gw.log" 2>&1 &
-  gw=$!
+  gw=$!; pids+=($gw)
   for _ in $(seq 100); do curl -sf localhost:8080/healthz >/dev/null && return 0; sleep 0.2; done
   echo "gateway did not come up"; tail -20 "$work/gw.log"; return 1
 }
