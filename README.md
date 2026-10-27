@@ -99,3 +99,13 @@ Not implemented: MQTT QoS 2, retained messages and persistent sessions
 (QoS 0/1 cover the telemetry use case), task downlink over gRPC (MQTT only).
 Anomaly baselines live in memory and re-warm after a restart. Use `-tls-cert`
 on anything that leaves a private network.
+
+## Requirements
+
+Go 1.26+ to build; Docker optional. Linux, macOS and Windows all build and pass
+the tests; latency numbers above are from Windows, so treat them as a floor.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md).
+Security reports: [SECURITY.md](SECURITY.md).
