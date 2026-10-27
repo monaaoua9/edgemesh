@@ -13,7 +13,7 @@ jobs:
       - run: go test -fuzz FuzzParsers -fuzztime 20s ./internal/mqtt
       - run: go test -fuzz FuzzUnmarshalBinary -fuzztime 10s ./internal/telemetry
       - run: go install golang.org/x/vuln/cmd/govulncheck@latest && govulncheck ./...
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with: { version: latest }
   docker:
     runs-on: ubuntu-latest
