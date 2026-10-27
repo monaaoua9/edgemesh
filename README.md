@@ -80,9 +80,11 @@ Kubernetes: `deploy/k8s/gateway.yaml` (StatefulSet + PVC, PDB, NetworkPolicy).
 | 8,000 MQTT + 5,000 gRPC streams (TLS), cloud down for 8 s mid-run | 928,752 accepted = 928,752 delivered, 0 duplicates, 0 lost |
 | WAL | ~1 Âµs/record in 64-record group commits, ~4.9 Âµs single append |
 | Anomaly detector | ~400 ns / reading; histogram `Observe` ~90 ns |
+| Linux CI runner (`make smoke`): 2,000 MQTT devices, 4 s cloud outage | 42,241 accepted = 42,241 delivered, 0 dup / lost; ack-to-durable latency p50 12 µs, p99 80 µs, p99.9 160 µs |
 
 Windows has a coarse monotonic clock in Go, so sub-millisecond percentiles read
-low there; run the simulator on Linux for real tail latencies.
+low there; the Linux row comes from the CI smoke job on a shared runner at light
+load, so it says nothing about 10k+ devices.
 
 ## Quality gates
 
