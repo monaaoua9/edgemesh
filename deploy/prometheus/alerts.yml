@@ -1,0 +1,56 @@
+groups:
+  - name: edge-gateway
+    rules:
+      - alert: UplinkDown
+        expr: edge_forward_online == 0
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.instance }} cannot reach the cloud, buffering to disk"
+
+      - alert: BacklogGrowing
+        expr: deriv(edge_forward_lag_records[10m]) > 0 and edge_forward_lag_records > 100000
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.instance }} upload backlog keeps growing"
+
+      - alert: DataLossRisk
+        expr: increase(edge_wal_evicted_total[5m]) > 0
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.instance }} disk cap reached, oldest unsent readings were dropped"
+
+      - alert: IngestShedding
+        expr: rate(edge_readings_dropped_total[5m]) + rate(edge_readings_rejected_total[5m]) > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.instance }} is shedding load (queue full), add workers or capacity"
+
+      - alert: WALWriteErrors
+        expr: increase(edge_wal_errors_total[5m]) > 0
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.instance }} failing to write to disk; acks are being withheld"
+
+      - alert: IngestLatencyHigh
+        expr: edge_ingest_latency_seconds{quantile="0.99"} > 0.25
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.instance }} p99 receipt-to-durable latency above 250ms"
+
+      - alert: FleetOfflineSpike
+        expr: edge_fleet_offline / (edge_fleet_online + edge_fleet_suspect + edge_fleet_offline) > 0.2
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "More than 20% of devices behind {{ $labels.instance }} are offline"
+
+      - alert: GatewayDown
+        expr: up{job="edge-gateway"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.instance }} is not scraping"

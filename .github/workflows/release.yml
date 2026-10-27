@@ -1,0 +1,36 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - run: go test -race -count=1 ./...
+      - name: binaries
+        run: |
+          for t in linux/amd64 linux/arm64 darwin/arm64 windows/amd64; do
+            os=${t%/*}; arch=${t#*/}; ext=""; [ $os = windows ] && ext=.exe
+            CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o dist/gateway-$os-$arch$ext ./cmd/gateway
+          done
+          (cd dist && sha256sum * > SHA256SUMS)
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: gateway
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: VERSION=${{ github.ref_name }}
+          tags: ghcr.io/${{ github.repository }}-gateway:${{ github.ref_name }},ghcr.io/${{ github.repository }}-gateway:latest
+      - uses: softprops/action-gh-release@v2
+        with: { files: dist/* }

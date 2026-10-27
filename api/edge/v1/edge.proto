@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package edge.v1;
+
+option go_package = "edgemesh/internal/grpcapi/edgev1;edgev1";
+
+enum Status {
+  STATUS_OK = 0;
+  STATUS_OVERLOADED = 1; // queue full, resend later
+  STATUS_INVALID = 2;    // will never succeed, do not resend
+  STATUS_INTERNAL = 3;   // storage failure, resend later
+}
+
+message Reading {
+  string metric = 1;
+  double value = 2;
+  int64 ts_us = 3; // unix microseconds, 0 = use gateway receive time
+}
+
+message ReadingBatch {
+  string device_id = 1;
+  uint64 seq = 2; // echoed in the Ack
+  repeated Reading readings = 3;
+}
+
+// Sent once every reading in the batch is durable on the gateway.
+message Ack {
+  uint64 seq = 1;
+  uint32 accepted = 2;
+  Status status = 3;
+}
+
+message HeartbeatRequest {
+  string device_id = 1;
+}
+
+message HeartbeatResponse {}
+
+service Ingest {
+  rpc Stream(stream ReadingBatch) returns (stream Ack);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}

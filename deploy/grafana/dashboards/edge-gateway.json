@@ -1,0 +1,397 @@
+{
+ "title": "Edge Gateway",
+ "uid": "edge-gateway",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "10s",
+ "time": {
+  "from": "now-30m",
+  "to": "now"
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "timeseries",
+   "title": "Connections / streams",
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_mqtt_connections",
+     "legendFormat": "mqtt",
+     "refId": "A"
+    },
+    {
+     "expr": "edge_grpc_streams",
+     "legendFormat": "grpc",
+     "refId": "B"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "timeseries",
+   "title": "Accepted readings /s",
+   "gridPos": {
+    "x": 8,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "rate(edge_readings_accepted_total[1m])",
+     "legendFormat": "accepted",
+     "refId": "A"
+    },
+    {
+     "expr": "rate(edge_readings_dropped_total[1m])",
+     "legendFormat": "shed qos0",
+     "refId": "B"
+    },
+    {
+     "expr": "rate(edge_readings_rejected_total[1m])",
+     "legendFormat": "refused qos1",
+     "refId": "C"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "timeseries",
+   "title": "Ingest latency (receipt \u2192 durable)",
+   "gridPos": {
+    "x": 16,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_ingest_latency_seconds{quantile=\"0.5\"}",
+     "legendFormat": "p50",
+     "refId": "A"
+    },
+    {
+     "expr": "edge_ingest_latency_seconds{quantile=\"0.99\"}",
+     "legendFormat": "p99",
+     "refId": "B"
+    },
+    {
+     "expr": "edge_ingest_latency_seconds{quantile=\"0.999\"}",
+     "legendFormat": "p99.9",
+     "refId": "C"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "timeseries",
+   "title": "Device \u2192 gateway network latency",
+   "gridPos": {
+    "x": 0,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_network_latency_seconds{quantile=\"0.5\"}",
+     "legendFormat": "p50",
+     "refId": "A"
+    },
+    {
+     "expr": "edge_network_latency_seconds{quantile=\"0.99\"}",
+     "legendFormat": "p99",
+     "refId": "B"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Upload backlog (records)",
+   "gridPos": {
+    "x": 8,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_forward_lag_records",
+     "legendFormat": "lag",
+     "refId": "A"
+    },
+    {
+     "expr": "edge_forward_online*1000",
+     "legendFormat": "online\u00d71000",
+     "refId": "B"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Disk buffer",
+   "gridPos": {
+    "x": 16,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_wal_bytes",
+     "legendFormat": "wal bytes",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Fleet",
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "edge_fleet_online",
+     "legendFormat": "online",
+     "refId": "A"
+    },
+    {
+     "expr": "edge_fleet_suspect",
+     "legendFormat": "suspect",
+     "refId": "B"
+    },
+    {
+     "expr": "edge_fleet_offline",
+     "legendFormat": "offline",
+     "refId": "C"
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Anomalies /s",
+   "gridPos": {
+    "x": 8,
+    "y": 14,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "rate(edge_anomalies_total[1m])",
+     "legendFormat": "flagged",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "Memory",
+   "gridPos": {
+    "x": 16,
+    "y": 14,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "process_heap_alloc_bytes",
+     "legendFormat": "heap",
+     "refId": "A"
+    },
+    {
+     "expr": "process_stack_inuse_bytes",
+     "legendFormat": "stacks",
+     "refId": "B"
+    },
+    {
+     "expr": "process_sys_bytes",
+     "legendFormat": "sys",
+     "refId": "C"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Goroutines",
+   "gridPos": {
+    "x": 0,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "process_goroutines",
+     "legendFormat": "goroutines",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "GC pause rate",
+   "gridPos": {
+    "x": 8,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "rate(process_gc_pause_seconds_total[1m])",
+     "legendFormat": "stw s/s",
+     "refId": "A"
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "type": "timeseries",
+   "title": "Upload failures /s",
+   "gridPos": {
+    "x": 16,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "datasource": {
+    "type": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "targets": [
+    {
+     "expr": "rate(edge_forward_failures_total[1m])",
+     "legendFormat": "failures",
+     "refId": "A"
+    },
+    {
+     "expr": "rate(edge_forward_dead_lettered_total[1m])",
+     "legendFormat": "dead-lettered",
+     "refId": "B"
+    }
+   ]
+  }
+ ]
+}
