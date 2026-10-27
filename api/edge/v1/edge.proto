@@ -36,7 +36,21 @@ message HeartbeatRequest {
 
 message HeartbeatResponse {}
 
+message TaskRequest {
+  string device_id = 1;
+}
+
+// Same fields as the JSON the MQTT downlink publishes on devices/<id>/tasks.
+message Task {
+  string id = 1;
+  string kind = 2;
+  bytes payload = 3; // opaque json
+  uint32 attempts = 4;
+}
+
 service Ingest {
   rpc Stream(stream ReadingBatch) returns (stream Ack);
   rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  // Device keeps this open to receive tasks. One stream per device, a new one replaces the old.
+  rpc Tasks(TaskRequest) returns (stream Task);
 }

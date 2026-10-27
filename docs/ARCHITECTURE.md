@@ -37,7 +37,7 @@ flowchart LR
     W --> F
     F -- "HTTPS, gzip, X-Batch-ID" --> CL
     FR -- "offline event" --> SC
-    SC -- "task downlink (MQTT)" --> MQ
+    SC -- "task downlink (MQTT or gRPC)" --> MQ
     GW --- OBS
 ```
 
@@ -105,7 +105,7 @@ reading itself is always flagged for the cloud. Rules: `deploy/rules.example.jso
 `online → suspect → offline` on silence (`-suspect-after`, `-offline-after`),
 any message counts as liveness. On `offline` the scheduler moves that device's
 tasks to the least-loaded online device (downlink over MQTT
-`devices/<id>/tasks`); with nobody available they stay pending and are placed
+`devices/<id>/tasks`, or the gRPC `Tasks` stream for devices that connect that way); with nobody available they stay pending and are placed
 as soon as a device appears.
 
 ## Topics
@@ -140,4 +140,3 @@ block the accept loop.
 ## Not done (on purpose)
 
 * MQTT QoS 2, retained messages, persistent sessions.
-* Task downlink over gRPC (tasks go to devices over MQTT `devices/<id>/tasks`).

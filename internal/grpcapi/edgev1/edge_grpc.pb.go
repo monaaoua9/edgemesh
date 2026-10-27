@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Ingest_Stream_FullMethodName    = "/edge.v1.Ingest/Stream"
 	Ingest_Heartbeat_FullMethodName = "/edge.v1.Ingest/Heartbeat"
+	Ingest_Tasks_FullMethodName     = "/edge.v1.Ingest/Tasks"
 )
 
 // IngestClient is the client API for Ingest service.
@@ -29,6 +30,8 @@ const (
 type IngestClient interface {
 	Stream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ReadingBatch, Ack], error)
 	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
+	// Device keeps this open to receive tasks. One stream per device, a new one replaces the old.
+	Tasks(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Task], error)
 }
 
 type ingestClient struct {
@@ -62,12 +65,33 @@ func (c *ingestClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts
 	return out, nil
 }
 
+func (c *ingestClient) Tasks(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Task], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Ingest_ServiceDesc.Streams[1], Ingest_Tasks_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TaskRequest, Task]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Ingest_TasksClient = grpc.ServerStreamingClient[Task]
+
 // IngestServer is the server API for Ingest service.
 // All implementations must embed UnimplementedIngestServer
 // for forward compatibility.
 type IngestServer interface {
 	Stream(grpc.BidiStreamingServer[ReadingBatch, Ack]) error
 	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
+	// Device keeps this open to receive tasks. One stream per device, a new one replaces the old.
+	Tasks(*TaskRequest, grpc.ServerStreamingServer[Task]) error
 	mustEmbedUnimplementedIngestServer()
 }
 
@@ -83,6 +107,9 @@ func (UnimplementedIngestServer) Stream(grpc.BidiStreamingServer[ReadingBatch, A
 }
 func (UnimplementedIngestServer) Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+}
+func (UnimplementedIngestServer) Tasks(*TaskRequest, grpc.ServerStreamingServer[Task]) error {
+	return status.Errorf(codes.Unimplemented, "method Tasks not implemented")
 }
 func (UnimplementedIngestServer) mustEmbedUnimplementedIngestServer() {}
 func (UnimplementedIngestServer) testEmbeddedByValue()                {}
@@ -130,6 +157,17 @@ func _Ingest_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Ingest_Tasks_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TaskRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(IngestServer).Tasks(m, &grpc.GenericServerStream[TaskRequest, Task]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Ingest_TasksServer = grpc.ServerStreamingServer[Task]
+
 // Ingest_ServiceDesc is the grpc.ServiceDesc for Ingest service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -148,6 +186,11 @@ var Ingest_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _Ingest_Stream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "Tasks",
+			Handler:       _Ingest_Tasks_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "edge/v1/edge.proto",

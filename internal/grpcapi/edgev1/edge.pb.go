@@ -334,6 +334,119 @@ func (*HeartbeatResponse) Descriptor() ([]byte, []int) {
 	return file_edge_v1_edge_proto_rawDescGZIP(), []int{4}
 }
 
+type TaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TaskRequest) Reset() {
+	*x = TaskRequest{}
+	mi := &file_edge_v1_edge_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TaskRequest) ProtoMessage() {}
+
+func (x *TaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_edge_v1_edge_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TaskRequest.ProtoReflect.Descriptor instead.
+func (*TaskRequest) Descriptor() ([]byte, []int) {
+	return file_edge_v1_edge_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *TaskRequest) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+// Same fields as the JSON the MQTT downlink publishes on devices/<id>/tasks.
+type Task struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind          string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Payload       []byte                 `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"` // opaque json
+	Attempts      uint32                 `protobuf:"varint,4,opt,name=attempts,proto3" json:"attempts,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Task) Reset() {
+	*x = Task{}
+	mi := &file_edge_v1_edge_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Task) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Task) ProtoMessage() {}
+
+func (x *Task) ProtoReflect() protoreflect.Message {
+	mi := &file_edge_v1_edge_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Task.ProtoReflect.Descriptor instead.
+func (*Task) Descriptor() ([]byte, []int) {
+	return file_edge_v1_edge_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Task) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Task) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *Task) GetPayload() []byte {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *Task) GetAttempts() uint32 {
+	if x != nil {
+		return x.Attempts
+	}
+	return 0
+}
+
 var File_edge_v1_edge_proto protoreflect.FileDescriptor
 
 const file_edge_v1_edge_proto_rawDesc = "" +
@@ -353,15 +466,23 @@ const file_edge_v1_edge_proto_rawDesc = "" +
 	"\x06status\x18\x03 \x01(\x0e2\x0f.edge.v1.StatusR\x06status\"/\n" +
 	"\x10HeartbeatRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\"\x13\n" +
-	"\x11HeartbeatResponse*W\n" +
+	"\x11HeartbeatResponse\"*\n" +
+	"\vTaskRequest\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\"`\n" +
+	"\x04Task\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x18\n" +
+	"\apayload\x18\x03 \x01(\fR\apayload\x12\x1a\n" +
+	"\battempts\x18\x04 \x01(\rR\battempts*W\n" +
 	"\x06Status\x12\r\n" +
 	"\tSTATUS_OK\x10\x00\x12\x15\n" +
 	"\x11STATUS_OVERLOADED\x10\x01\x12\x12\n" +
 	"\x0eSTATUS_INVALID\x10\x02\x12\x13\n" +
-	"\x0fSTATUS_INTERNAL\x10\x032\x7f\n" +
+	"\x0fSTATUS_INTERNAL\x10\x032\xaf\x01\n" +
 	"\x06Ingest\x121\n" +
 	"\x06Stream\x12\x15.edge.v1.ReadingBatch\x1a\f.edge.v1.Ack(\x010\x01\x12B\n" +
-	"\tHeartbeat\x12\x19.edge.v1.HeartbeatRequest\x1a\x1a.edge.v1.HeartbeatResponseB)Z'edgemesh/internal/grpcapi/edgev1;edgev1b\x06proto3"
+	"\tHeartbeat\x12\x19.edge.v1.HeartbeatRequest\x1a\x1a.edge.v1.HeartbeatResponse\x12.\n" +
+	"\x05Tasks\x12\x14.edge.v1.TaskRequest\x1a\r.edge.v1.Task0\x01B)Z'edgemesh/internal/grpcapi/edgev1;edgev1b\x06proto3"
 
 var (
 	file_edge_v1_edge_proto_rawDescOnce sync.Once
@@ -376,7 +497,7 @@ func file_edge_v1_edge_proto_rawDescGZIP() []byte {
 }
 
 var file_edge_v1_edge_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_edge_v1_edge_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_edge_v1_edge_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_edge_v1_edge_proto_goTypes = []any{
 	(Status)(0),               // 0: edge.v1.Status
 	(*Reading)(nil),           // 1: edge.v1.Reading
@@ -384,16 +505,20 @@ var file_edge_v1_edge_proto_goTypes = []any{
 	(*Ack)(nil),               // 3: edge.v1.Ack
 	(*HeartbeatRequest)(nil),  // 4: edge.v1.HeartbeatRequest
 	(*HeartbeatResponse)(nil), // 5: edge.v1.HeartbeatResponse
+	(*TaskRequest)(nil),       // 6: edge.v1.TaskRequest
+	(*Task)(nil),              // 7: edge.v1.Task
 }
 var file_edge_v1_edge_proto_depIdxs = []int32{
 	1, // 0: edge.v1.ReadingBatch.readings:type_name -> edge.v1.Reading
 	0, // 1: edge.v1.Ack.status:type_name -> edge.v1.Status
 	2, // 2: edge.v1.Ingest.Stream:input_type -> edge.v1.ReadingBatch
 	4, // 3: edge.v1.Ingest.Heartbeat:input_type -> edge.v1.HeartbeatRequest
-	3, // 4: edge.v1.Ingest.Stream:output_type -> edge.v1.Ack
-	5, // 5: edge.v1.Ingest.Heartbeat:output_type -> edge.v1.HeartbeatResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
+	6, // 4: edge.v1.Ingest.Tasks:input_type -> edge.v1.TaskRequest
+	3, // 5: edge.v1.Ingest.Stream:output_type -> edge.v1.Ack
+	5, // 6: edge.v1.Ingest.Heartbeat:output_type -> edge.v1.HeartbeatResponse
+	7, // 7: edge.v1.Ingest.Tasks:output_type -> edge.v1.Task
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -410,7 +535,7 @@ func file_edge_v1_edge_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_edge_v1_edge_proto_rawDesc), len(file_edge_v1_edge_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

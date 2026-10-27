@@ -26,6 +26,7 @@ import (
 type rig struct {
 	log  *wal.Log
 	fl   *fleet.Registry
+	srv  *Server
 	addr string
 }
 
@@ -51,7 +52,7 @@ func newRig(t *testing.T, token string, creds credentials.TransportCredentials) 
 		pipe.Close()
 		l.Close()
 	})
-	return &rig{log: l, fl: fl, addr: ln.Addr().String()}
+	return &rig{log: l, fl: fl, srv: s, addr: ln.Addr().String()}
 }
 
 func dial(t *testing.T, addr string, creds credentials.TransportCredentials) edgev1.IngestClient {

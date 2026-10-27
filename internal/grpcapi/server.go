@@ -10,6 +10,7 @@ import (
 	"math"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"google.golang.org/grpc"
@@ -28,12 +29,25 @@ import (
 
 const MaxBatchReadings = 1000
 
+var (
+	ErrNoTaskStream = errors.New("grpcapi: device has no open task stream")
+	ErrTaskBusy     = errors.New("grpcapi: task stream backed up")
+)
+
+type taskSub struct {
+	ch   chan *edgev1.Task
+	done chan struct{} // closed when a newer stream for the same device takes over
+}
+
 type Server struct {
 	edgev1.UnimplementedIngestServer
 	pipe  *ingest.Pipeline
 	fleet *fleet.Registry
 	token []byte
 	gs    *grpc.Server
+
+	tmu   sync.Mutex
+	tasks map[string]*taskSub
 
 	batches  *metrics.Counter
 	readings *metrics.Counter
@@ -45,7 +59,7 @@ type Server struct {
 // token empty = no auth. creds nil = plaintext.
 func New(p *ingest.Pipeline, f *fleet.Registry, token string, creds credentials.TransportCredentials, reg *metrics.Registry) *Server {
 	s := &Server{
-		pipe: p, fleet: f, token: []byte(token),
+		pipe: p, fleet: f, token: []byte(token), tasks: map[string]*taskSub{},
 		batches:  reg.Counter("edge_grpc_batches_total", "batches received over gRPC"),
 		readings: reg.Counter("edge_grpc_readings_total", "readings acked over gRPC"),
 		invalid:  reg.Counter("edge_grpc_invalid_total", "batches rejected as invalid"),
@@ -180,4 +194,54 @@ func (s *Server) batch(ctx context.Context, b *edgev1.ReadingBatch) (*edgev1.Ack
 		ack.Status = edgev1.Status_STATUS_INTERNAL
 	}
 	return ack, nil
+}
+
+func (s *Server) Tasks(r *edgev1.TaskRequest, st edgev1.Ingest_TasksServer) error {
+	if !validDevice(r.DeviceId) {
+		return status.Error(codes.InvalidArgument, "bad device_id")
+	}
+	sub := &taskSub{ch: make(chan *edgev1.Task, 16), done: make(chan struct{})}
+	s.tmu.Lock()
+	if old := s.tasks[r.DeviceId]; old != nil {
+		close(old.done)
+	}
+	s.tasks[r.DeviceId] = sub
+	s.tmu.Unlock()
+	defer func() {
+		s.tmu.Lock()
+		if s.tasks[r.DeviceId] == sub {
+			delete(s.tasks, r.DeviceId)
+		}
+		s.tmu.Unlock()
+	}()
+
+	s.fleet.Touch(r.DeviceId)
+	for {
+		select {
+		case t := <-sub.ch:
+			if err := st.Send(t); err != nil {
+				return err
+			}
+		case <-sub.done:
+			return status.Error(codes.AlreadyExists, "replaced by a newer task stream")
+		case <-st.Context().Done():
+			return st.Context().Err()
+		}
+	}
+}
+
+// Dispatch matches fleet.Dispatch. Errors mean the scheduler should try another device.
+func (s *Server) Dispatch(dev string, t fleet.Task) error {
+	s.tmu.Lock()
+	sub := s.tasks[dev]
+	s.tmu.Unlock()
+	if sub == nil {
+		return ErrNoTaskStream
+	}
+	select {
+	case sub.ch <- &edgev1.Task{Id: t.ID, Kind: t.Kind, Payload: t.Payload, Attempts: uint32(t.Attempts)}:
+		return nil
+	default:
+		return ErrTaskBusy
+	}
 }

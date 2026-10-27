@@ -133,12 +133,16 @@ func run(cfg config.Config) error {
 	}
 	srv := mqtt.NewServer(mqtt.Config{Addr: cfg.MQTTAddr, MaxConns: cfg.MaxConns, Auth: auth, Logger: lg}, handler)
 
+	var gsrv *grpcapi.Server
 	sched := fleet.NewScheduler(fl, func(dev string, t fleet.Task) error {
 		b, _ := json.Marshal(t)
-		return srv.Publish(dev, "devices/"+dev+"/tasks", b)
+		err := srv.Publish(dev, "devices/"+dev+"/tasks", b)
+		if err != nil && gsrv != nil {
+			return gsrv.Dispatch(dev, t)
+		}
+		return err
 	})
 
-	var gsrv *grpcapi.Server
 	if cfg.GRPCAddr != "" {
 		var creds credentials.TransportCredentials
 		if srvTLS != nil {
