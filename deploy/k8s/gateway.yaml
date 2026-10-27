@@ -14,14 +14,12 @@ data:
       "vibration":   { "max": 15, "z": 4.5, "min_std": 0.1 }
     }
 ---
-# create the real secret out of band (sealed-secrets / external-secrets); this is a placeholder
-apiVersion: v1
-kind: Secret
-metadata: { name: gateway-secrets, namespace: edge }
-type: Opaque
-stringData:
-  EDGE_AUTH_TOKEN: change-me
-  EDGE_CLOUD_TOKEN: change-me
+# no Secret in this file on purpose. before applying:
+#   kubectl -n edge create secret generic gateway-secrets \
+#     --from-literal=EDGE_AUTH_TOKEN="$(openssl rand -hex 24)" \
+#     --from-literal=EDGE_CLOUD_TOKEN='<token for your ingest endpoint>' \
+#     --from-literal=EDGE_CLOUD_URL='https://<your-ingest-host>/v1/ingest'
+#   kubectl -n edge create secret tls gateway-tls --cert=server.pem --key=server-key.pem
 ---
 apiVersion: v1
 kind: Service
@@ -76,7 +74,7 @@ spec:
           image: ghcr.io/monaaoua9/edgemesh-gateway:latest
           args:
             - -id=$(POD_NAME)
-            - -cloud=https://ingest.example.com/v1/ingest
+            - -cloud=$(EDGE_CLOUD_URL)
             - -tls-cert=/tls/tls.crt
             - -tls-key=/tls/tls.key
             - -rules=/rules/rules.json
@@ -85,6 +83,8 @@ spec:
           env:
             - name: POD_NAME
               valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: EDGE_CLOUD_URL
+              valueFrom: { secretKeyRef: { name: gateway-secrets, key: EDGE_CLOUD_URL } }
           envFrom:
             - secretRef: { name: gateway-secrets }
           ports:
