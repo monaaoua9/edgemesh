@@ -37,3 +37,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: scripts/compose-smoke.sh
+  k8s:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with: { go-version: "1.26", check-latest: true }
+      - run: scripts/k8s-smoke.sh
+  systemd:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with: { go-version: "1.26", check-latest: true }
+      - run: |
+          go build -o gateway ./cmd/gateway
+          sudo install -m755 gateway /usr/local/bin/gateway
+          sudo useradd --system edgemesh
+          sudo install -d /etc/edgemesh /etc/edgemesh/tls
+          sudo touch /etc/edgemesh/gateway.env
+          sudo systemd-analyze verify "$PWD/deploy/systemd/edgemesh-gateway.service"
