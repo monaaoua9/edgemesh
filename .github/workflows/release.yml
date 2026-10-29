@@ -31,6 +31,14 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: VERSION=${{ github.ref_name }}
+          labels: |
+            org.opencontainers.image.title=edgemesh-gateway
+            org.opencontainers.image.description=Edge IoT ingestion gateway: MQTT + gRPC, WAL store-and-forward, anomaly detection, fleet management
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+          annotations: |
+            index:org.opencontainers.image.description=Edge IoT ingestion gateway: MQTT + gRPC, WAL store-and-forward, anomaly detection, fleet management
+            index:org.opencontainers.image.source=https://github.com/${{ github.repository }}
           tags: ghcr.io/${{ github.repository }}-gateway:${{ github.ref_name }},ghcr.io/${{ github.repository }}-gateway:latest
       - uses: softprops/action-gh-release@v2
         with: { files: dist/* }
