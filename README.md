@@ -17,7 +17,7 @@ Only third-party dependencies: gRPC and protobuf.
 ```
 
 Diagram, guarantees, WAL format, concurrency model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The decisions and trade-offs in short: [docs/DESIGN.md](docs/DESIGN.md).
-Running it in production: [docs/OPERATIONS.md](docs/OPERATIONS.md) · [SECURITY.md](SECURITY.md).
+Running it in production: [docs/OPERATIONS.md](docs/OPERATIONS.md) · [SECURITY.md](SECURITY.md). Component benchmarks from a fresh three-run set: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## Guarantees
 
