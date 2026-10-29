@@ -69,6 +69,8 @@ make certs
 ```
 
 Full stack with dashboards: `make compose-up` (Grafana on :3000).
+Docker: every release tag publishes a multi-arch (amd64, arm64) gateway image to GHCR, `docker pull ghcr.io/monaaoua9/edgemesh-gateway:latest`. Release binaries for Linux, macOS and Windows are attached to the GitHub release.
+
 Kubernetes: `deploy/k8s/gateway.yaml` (StatefulSet + PVC, PDB, NetworkPolicy).
 `./bin/gateway -h` lists every flag; `EDGE_AUTH_TOKEN` / `EDGE_CLOUD_TOKEN` set tokens without leaking them in `ps`.
 
