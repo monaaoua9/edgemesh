@@ -16,7 +16,7 @@ Only third-party dependencies: gRPC and protobuf.
                          fleet registry ─▶ task scheduler    durable write
 ```
 
-Diagram, guarantees, WAL format, concurrency model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Diagram, guarantees, WAL format, concurrency model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The decisions and trade-offs in short: [docs/DESIGN.md](docs/DESIGN.md).
 Running it in production: [docs/OPERATIONS.md](docs/OPERATIONS.md) · [SECURITY.md](SECURITY.md).
 
 ## Guarantees
