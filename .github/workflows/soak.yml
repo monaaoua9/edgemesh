@@ -26,6 +26,6 @@ jobs:
         if: always()
         run: |
           { echo '```'; cat soak.txt; echo '```'; echo; echo '```'; awk -F, 'NR==1||NR%30==0' soak.csv; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with: { name: soak, path: "soak.csv\nsoak.txt" }
